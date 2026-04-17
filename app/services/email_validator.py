@@ -80,20 +80,46 @@ async def verify_email(email: str, check_smtp_enabled: bool = True) -> Dict[str,
     # Not free email +10
     
     score = 0
+    breakdown = []
+    
     if result["smtp_check"]:
         score += 40
+        breakdown.append({"label": "SMTP Success", "points": "+40"})
+    else:
+        breakdown.append({"label": "SMTP Success", "points": "+0"})
+
     if result["mx_found"]:
         score += 20
+        breakdown.append({"label": "Valid MX", "points": "+20"})
+    else:
+        breakdown.append({"label": "Valid MX", "points": "+0"})
+
     if not result["is_disposable"]:
         score += 10
+        breakdown.append({"label": "Not Disposable", "points": "+10"})
+    else:
+        breakdown.append({"label": "Not Disposable", "points": "+0"})
+
     if not result["is_catch_all"]:
         score += 15
+        breakdown.append({"label": "Not Catch-all", "points": "+15"})
+    else:
+        breakdown.append({"label": "Not Catch-all", "points": "+0"})
+
     if not result["is_role_based"]:
         score += 5
+        breakdown.append({"label": "Not Role-based", "points": "+5"})
+    else:
+        breakdown.append({"label": "Not Role-based", "points": "+0"})
+
     if not result["is_free_email"]:
         score += 10
+        breakdown.append({"label": "Not Free Email", "points": "+10"})
+    else:
+        breakdown.append({"label": "Not Free Email", "points": "+0"})
         
     result["score"] = min(100, max(0, score))
+    result["breakdown"] = breakdown
     
     # Status determination based on required categories
     if not EMAIL_REGEX.match(email) or not result["mx_found"]:

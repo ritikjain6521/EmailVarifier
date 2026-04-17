@@ -38,6 +38,7 @@ type VerificationResult = {
   smtp_check: boolean;
   mx_found: boolean;
   score: number;
+  breakdown?: { label: string; points: string }[];
 };
 
 export default function Dashboard() {
@@ -365,20 +366,20 @@ export default function Dashboard() {
                     <p className="text-sm text-slate-500 max-w-xs mt-2 font-medium">Upload a valid JSON list to initialize the verification engine sequence.</p>
                   </div>
                 ) : (
-                  <table className="w-full text-left text-sm whitespace-nowrap">
+                  <table className="w-full text-left text-sm whitespace-nowrap border-separate border-spacing-0">
                     <thead className="bg-slate-50/80 dark:bg-slate-900/80 sticky top-0 border-b border-border-color z-10 backdrop-blur-sm">
                       <tr>
-                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Recipient</th>
-                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Classification</th>
-                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Technical Specs</th>
-                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Score</th>
-                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Status</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Recipient</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Classification</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Technical Specs</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Score</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-color">
                       {results.map((r, i) => (
                         <tr key={i} className="hover:bg-primary/[0.02] dark:hover:bg-primary/[0.05] transition-colors group">
-                          <td className="px-8 py-6">
+                          <td className="px-8 py-6 border-b border-border-color">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-400 uppercase">
                                 {r.email.slice(0, 2)}
@@ -388,7 +389,7 @@ export default function Dashboard() {
                               </span>
                             </div>
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-8 py-6 border-b border-border-color">
                             <div className="flex flex-wrap gap-1">
                               {r.is_free_email && (
                                 <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-500 uppercase tracking-tighter">FREE</span>
@@ -407,7 +408,7 @@ export default function Dashboard() {
                               )}
                             </div>
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-8 py-6 border-b border-border-color">
                             <div className="flex items-center gap-4">
                               <div className="flex flex-col items-center">
                                 <span className={`text-[10px] font-black uppercase tracking-widest mb-1 ${r.mx_found ? 'text-green-500' : 'text-red-500'}`}>MX</span>
@@ -420,8 +421,8 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-8 py-6">
-                            <div className="flex flex-col gap-1 w-24">
+                          <td className="px-8 py-6 border-b border-border-color relative">
+                            <div className="flex flex-col gap-1 w-24 group/score cursor-help">
                               <div className="flex justify-between items-end">
                                 <span className={`text-sm font-black tracking-tighter ${r.score >= 80 ? 'text-green-600' : r.score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
                                   {r.score}%
@@ -434,9 +435,28 @@ export default function Dashboard() {
                                   style={{ width: `${r.score}%` }}
                                 ></div>
                               </div>
+
+                              {/* Calculation Tooltip */}
+                              {r.breakdown && (
+                                <div className="absolute left-8 bottom-full mb-2 w-48 bg-slate-900 text-white rounded-xl p-4 shadow-2xl opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all duration-200 z-30 translate-y-2 group-hover/score:translate-y-0 border border-slate-700">
+                                  <p className="text-[10px] font-black uppercase tracking-widest mb-3 text-slate-400 border-b border-slate-800 pb-2">Score Calculation</p>
+                                  <div className="space-y-2">
+                                    {r.breakdown.map((item, idx) => (
+                                      <div key={idx} className="flex justify-between items-center text-[10px]">
+                                        <span className="font-bold text-slate-300">{item.label}</span>
+                                        <span className={`font-black ${item.points !== '+0' ? 'text-green-400' : 'text-slate-500'}`}>{item.points}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="mt-3 pt-2 border-t border-slate-800 flex justify-between items-center">
+                                    <span className="text-[10px] font-black uppercase text-white">Final Score</span>
+                                    <span className="text-xs font-black text-primary">{r.score}</span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </td>
-                          <td className="px-8 py-6">
+                          <td className="px-8 py-6 border-b border-border-color">
                             {getStatusBadge(r.status)}
                           </td>
                         </tr>
@@ -445,6 +465,7 @@ export default function Dashboard() {
                   </table>
                 )}
               </div>
+
               
               {results.length > 0 && (
                 <div className="p-4 border-t border-border-color bg-slate-50/30 dark:bg-slate-900/30 flex items-center justify-between">
