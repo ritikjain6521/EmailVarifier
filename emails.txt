@@ -1,0 +1,5 @@
+test@example.com
+admin@google.com
+fake_email_1234567890@mailinator.com
+support@github.com
+invalid-email-format
