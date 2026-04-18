@@ -15,6 +15,14 @@ out/
 build/
 .next-env.d.ts
 
+# Env
+.env
+*.env
+
 # OS
 .DS_Store
 Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
