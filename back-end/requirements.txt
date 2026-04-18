@@ -5,7 +5,10 @@ asyncpg
 pydantic>=2.0
 pydantic-settings
 python-dotenv
+
+# ✅ ADD THESE
 dnspython
-PySocks
+pysocks
 python-jose[cryptography]
 passlib[bcrypt]
+python-multipart
