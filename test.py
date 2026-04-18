@@ -57,20 +57,20 @@ def run_test():
     except FileNotFoundError:
         print("Could not find emails.txt for testing.")
 
-    # 3. Create and Test uploading a JSON file
-    test_json_data = ["test1@gmail.com", "fake_abc123@mailinator.com", "admin@google.com"]
-    with open("test_upload.json", "w") as f:
-        json.dump(test_json_data, f)
-        
-    print("\n--- Testing JSON File Upload ---")
-    with open('test_upload.json', 'rb') as f:
-        files_json = {'file': ('test_upload.json', f, 'application/json')}
+    # 3. Test uploading the new status test JSON file
+    print("\n--- Testing New Statuses JSON File Upload ---")
+    with open('test_new_statuses.json', 'rb') as f:
+        files_json = {'file': ('test_new_statuses.json', f, 'application/json')}
         response_json = requests.post(f"{BASE_URL}/api/upload-verify", files=files_json, headers=headers)
 
     if response_json.status_code == 200:
-        print(f"JSON Upload Success! Processed {response_json.json()['total']} emails.")
-        print("Full JSON test results:")
-        print(json.dumps(response_json.json()["results"], indent=2))
+        results = response_json.json()["results"]
+        print(f"JSON Upload Success! Processed {len(results)} emails.")
+        print("\nVerification Results Summary:")
+        print(f"{'Email':<25} | {'Status':<15} | {'Reason':<25} | {'Risk':<10}")
+        print("-" * 80)
+        for r in results:
+            print(f"{r['email']:<25} | {r['status']:<15} | {r.get('reason', 'N/A'):<25} | {r.get('risk', 'N/A'):<10}")
     else:
         print(f"JSON Upload Failed: {response_json.text}")
 

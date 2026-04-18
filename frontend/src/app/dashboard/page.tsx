@@ -30,7 +30,10 @@ type UserData = {
 
 type VerificationResult = {
   email: string;
-  status: "valid" | "invalid" | "disposable" | "catch_all" | "role_based" | "free_email" | "unknown" | "risky";
+  status: "valid" | "invalid" | "disposable" | "catch_all" | "role_based" | "free_email" | "unknown" | "risky" | "inbox_full" | "disabled" | "temporary_failure" | "blocked";
+  reason: string;
+  risk: "low" | "medium" | "high";
+  action: string;
   is_disposable: boolean;
   is_catch_all: boolean;
   is_role_based: boolean;
@@ -157,6 +160,30 @@ export default function Dashboard() {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
             <CheckCircle className="w-3.5 h-3.5" /> Valid
+          </span>
+        );
+      case 'inbox_full':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800">
+            <Mail className="w-3.5 h-3.5" /> Inbox Full
+          </span>
+        );
+      case 'disabled':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800">
+            <XCircle className="w-3.5 h-3.5" /> Disabled
+          </span>
+        );
+      case 'temporary_failure':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Retry
+          </span>
+        );
+      case 'blocked':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-900 text-white dark:bg-slate-800 dark:text-slate-300 border border-slate-700">
+            <AlertTriangle className="w-3.5 h-3.5" /> Blocked
           </span>
         );
       case 'invalid':
@@ -371,8 +398,10 @@ export default function Dashboard() {
                       <tr>
                         <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Recipient</th>
                         <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Classification</th>
-                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Technical Specs</th>
-                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Score</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Reason</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Risk</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Action</th>
+                        <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Trust</th>
                         <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px] border-b border-border-color">Status</th>
                       </tr>
                     </thead>
@@ -409,17 +438,19 @@ export default function Dashboard() {
                             </div>
                           </td>
                           <td className="px-8 py-6 border-b border-border-color">
-                            <div className="flex items-center gap-4">
-                              <div className="flex flex-col items-center">
-                                <span className={`text-[10px] font-black uppercase tracking-widest mb-1 ${r.mx_found ? 'text-green-500' : 'text-red-500'}`}>MX</span>
-                                <div className={`w-2 h-2 rounded-full ${r.mx_found ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500'}`} />
-                              </div>
-                              <div className="w-[1px] h-6 bg-border-color" />
-                              <div className="flex flex-col items-center">
-                                <span className={`text-[10px] font-black uppercase tracking-widest mb-1 ${r.smtp_check ? 'text-green-500' : 'text-slate-300 dark:text-slate-700'}`}>SMTP</span>
-                                <div className={`w-2 h-2 rounded-full ${r.smtp_check ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-slate-200 dark:bg-slate-800'}`} />
-                              </div>
-                            </div>
+                            <span className="text-xs font-bold text-slate-500">{r.reason}</span>
+                          </td>
+                          <td className="px-8 py-6 border-b border-border-color">
+                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${
+                              r.risk === 'low' ? 'bg-green-100 text-green-700' : 
+                              r.risk === 'medium' ? 'bg-orange-100 text-orange-700' : 
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {r.risk}
+                            </span>
+                          </td>
+                          <td className="px-8 py-6 border-b border-border-color">
+                            <span className="text-xs font-black text-foreground">{r.action}</span>
                           </td>
                           <td className="px-8 py-6 border-b border-border-color relative">
                             <div className="flex flex-col gap-1 w-24 group/score cursor-help">
@@ -427,9 +458,8 @@ export default function Dashboard() {
                                 <span className={`text-sm font-black tracking-tighter ${r.score >= 80 ? 'text-green-600' : r.score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
                                   {r.score}%
                                 </span>
-                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Trust</span>
                               </div>
-                              <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                              <div className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div 
                                   className={`h-full rounded-full transition-all duration-1000 ${r.score >= 80 ? 'bg-green-500' : r.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
                                   style={{ width: `${r.score}%` }}
@@ -439,7 +469,7 @@ export default function Dashboard() {
                               {/* Calculation Tooltip */}
                               {r.breakdown && (
                                 <div className="absolute left-8 bottom-full mb-2 w-48 bg-slate-900 text-white rounded-xl p-4 shadow-2xl opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all duration-200 z-30 translate-y-2 group-hover/score:translate-y-0 border border-slate-700">
-                                  <p className="text-[10px] font-black uppercase tracking-widest mb-3 text-slate-400 border-b border-slate-800 pb-2">Score Calculation</p>
+                                  <p className="text-[10px] font-black uppercase tracking-widest mb-3 text-slate-400 border-b border-slate-800 pb-2">Technical Breakdown</p>
                                   <div className="space-y-2">
                                     {r.breakdown.map((item, idx) => (
                                       <div key={idx} className="flex justify-between items-center text-[10px]">
@@ -447,10 +477,6 @@ export default function Dashboard() {
                                         <span className={`font-black ${item.points !== '+0' ? 'text-green-400' : 'text-slate-500'}`}>{item.points}</span>
                                       </div>
                                     ))}
-                                  </div>
-                                  <div className="mt-3 pt-2 border-t border-slate-800 flex justify-between items-center">
-                                    <span className="text-[10px] font-black uppercase text-white">Final Score</span>
-                                    <span className="text-xs font-black text-primary">{r.score}</span>
                                   </div>
                                 </div>
                               )}
@@ -469,7 +495,7 @@ export default function Dashboard() {
               
               {results.length > 0 && (
                 <div className="p-4 border-t border-border-color bg-slate-50/30 dark:bg-slate-900/30 flex items-center justify-between">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Classification Engine v2.4.0-Stable</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Classification Engine v2.5.0-SaaS</p>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                     <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Secure Cloud Native Deployment</span>
