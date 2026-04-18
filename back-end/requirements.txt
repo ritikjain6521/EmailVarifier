@@ -8,3 +8,4 @@ python-dotenv
 dnspython
 PySocks
 python-jose[cryptography]
+passlib[bcrypt]
