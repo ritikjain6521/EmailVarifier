@@ -4,3 +4,5 @@ pydantic>=2.6.0
 dnspython>=2.5.0
 PySocks>=1.7.1
 redis>=5.0.0
+sqlalchemy
+asyncpg
